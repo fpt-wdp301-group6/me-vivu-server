@@ -1,0 +1,131 @@
+@baseUrl = http://localhost:2000/api
+@token = 
+
+####################### Auth #######################
+
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "jinnguyen01@gmail.com",
+    "password": "2604",
+    "name": "Syaoran"
+}
+
+###
+
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "jinnguyen054@gmail.com",
+    "password": "2604"
+}
+
+### 
+
+# @name [Auth]refreshToken
+POST {{baseUrl}}/auth/refresh-token
+
+### 
+
+# @name [Auth]logout
+GET {{baseUrl}}/auth/logout
+
+### 
+
+# @name [Auth]loginByRefreshToken
+POST {{baseUrl}}/auth/login-refresh
+
+###
+
+####################### Genre #######################
+@:genreId = 6657f3aa9cb00559c648700f
+
+# @name createGenre
+POST {{baseUrl}}/genres
+Content-Type: application/json
+
+{
+    "name": "Kinh dị"
+}
+
+###
+
+# @name updateGenre
+PUT {{baseUrl}}/genres/{{:genreId}}
+Content-Type: application/json
+
+{
+    "name": "Hài hước"
+}
+
+###
+
+# @name deleteGenre
+DELETE {{baseUrl}}/genres/{{:genreId}}
+
+###
+
+# @name getGenre
+GET  {{baseUrl}}/genres/{{:genreId}}
+
+###
+
+# @name getGenres
+GET  {{baseUrl}}/genres
+
+###
+
+####################### Movie #######################
+@:movieId = 665802fe86358bd3b358c5af
+
+# @name createMovie
+POST {{baseUrl}}/movies
+Content-Type: application/json
+
+{
+    "title": "Doraemon: Nobita và bản giao hưởng Địa Cầu",
+    "description": "TÁC PHẨM KỶ NIỆM 90 NĂM FUJIKO F FUJIO Chuẩn bị cho buổi hòa nhạc ở trường, Nobita đang tập thổi sáo - nhạc cụ mà cậu dở tệ. Thích thú trước nốt \"No\" lạc quẻ của Nobita, Micca - cô bé bí ẩn đã mời Doraemon, Nobita cùng nhóm bạn đến \"Farre\" - Cung điện âm nhạc tọa lạc trên một hành tinh nơi âm nhạc sẽ hóa thành năng lượng. Nhằm cứu cung điện này, Micca đang tìm kiếm \"virtuoso\" - bậc thầy âm nhạc sẽ cùng mình biểu diễn! Với bảo bối thần kì \"chứng chỉ chuyên viên âm nhạc\", Doraemon và các bạn đã chọn nhạc cụ, cùng Micca hòa tấu, từng bước khôi phục cung điện. Tuy nhiên, một vật thể sống đáng sợ sẽ xóa số âm nhạc khỏi thế giới đang đến gần, Trái Đất đang rơi vào nguy hiểm... ! Liệu những người bạn nhỏ có thể cứu được \"tương lai âm nhạc\" và cả địa cầu này?",
+    "poster": "https://cinema.momocdn.net/img/57932774564813069-sKwOXRajl9YfnXHoisxSScs36YS.jpg",
+    "duration": 140,
+    "releaseDate": "05/24/2024",
+    "country": "Nhật Bản",
+    "trailer": "Yug8gbDd5EQ",
+    "age": 0
+}
+
+###
+
+# @name updateMovie
+PUT {{baseUrl}}/movies/{{:movieId}}
+Content-Type: application/json
+
+{
+    "title": "Doraemon: Nobita và bản giao hưởng Địa Cầu",
+    "description": "TÁC PHẨM KỶ NIỆM 90 NĂM FUJIKO F FUJIO Chuẩn bị cho buổi hòa nhạc ở trường, Nobita đang tập thổi sáo - nhạc cụ mà cậu dở tệ. Thích thú trước nốt \"No\" lạc quẻ của Nobita, Micca - cô bé bí ẩn đã mời Doraemon, Nobita cùng nhóm bạn đến \"Farre\" - Cung điện âm nhạc tọa lạc trên một hành tinh nơi âm nhạc sẽ hóa thành năng lượng. Nhằm cứu cung điện này, Micca đang tìm kiếm \"virtuoso\" - bậc thầy âm nhạc sẽ cùng mình biểu diễn! Với bảo bối thần kì \"chứng chỉ chuyên viên âm nhạc\", Doraemon và các bạn đã chọn nhạc cụ, cùng Micca hòa tấu, từng bước khôi phục cung điện. Tuy nhiên, một vật thể sống đáng sợ sẽ xóa số âm nhạc khỏi thế giới đang đến gần, Trái Đất đang rơi vào nguy hiểm... ! Liệu những người bạn nhỏ có thể cứu được \"tương lai âm nhạc\" và cả địa cầu này?",
+    "poster": "https://cinema.momocdn.net/img/57932774564813069-sKwOXRajl9YfnXHoisxSScs36YS.jpg",
+    "duration": 120,
+    "releaseDate": "05/24/2024",
+    "country": "Nhật Bản",
+    "trailer": "Yug8gbDd5EQ",
+    "age": 0
+}
+
+###
+
+# @name deleteMovie
+DELETE {{baseUrl}}/movies/{{:movieId}}
+
+###
+
+# @name getMovie
+GET {{baseUrl}}/movies/{{:movieId}}
+
+###
+
+# @name getMovies
+GET {{baseUrl}}/movies
+
