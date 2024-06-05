@@ -16,6 +16,24 @@ const Theater = new Schema(
             type: String,
             required: true,
         },
+        address: {
+            city: {
+                type: String,
+                required: true,
+            },
+            district: {
+                type: String,
+                required: true,
+            },
+            ward: {
+                type: String,
+                required: true,
+            },
+            street: {
+                type: String,
+                required: true,
+            },
+        },
         rooms: [
             {
                 type: Schema.Types.ObjectId,
