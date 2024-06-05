@@ -34,4 +34,19 @@ const City = model('City', CitySchema);
 const District = model('District', DistrictSchema);
 const Ward = model('Ward', WardSchema);
 
-module.exports = { City, District, Ward };
+const getAddressDetails = async (city, district, ward) => {
+    if (ward) {
+        const data = await Ward.findOne({ code: ward });
+        return data.path;
+    }
+    if (district) {
+        const data = await District.findOne({ code: district });
+        return data.path;
+    }
+    if (city) {
+        const data = await City.findOne({ code: city });
+        return data.name_with_type;
+    }
+};
+
+module.exports = { City, District, Ward, getAddressDetails };

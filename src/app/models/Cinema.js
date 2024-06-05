@@ -20,13 +20,6 @@ const Cinema = new Schema(
         logo: {
             type: String,
         },
-        theaters: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Theater',
-                required: true,
-            },
-        ],
     },
     { timestamps: true },
 );

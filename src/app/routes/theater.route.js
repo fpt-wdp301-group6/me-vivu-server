@@ -9,15 +9,16 @@ const {
     getTheatersAll,
     getTheaterWithDeleted,
 } = require('../controllers/theater.controller');
+const { isCinema } = require('../middlewares/authenticate');
 
 const router = Router();
 
-router.post('/', createTheater);
-router.put('/:id', updateTheater);
-router.delete('/:id', deleteTheater);
-router.patch('/:id/restore', restoreTheater);
-router.get('/all/:id', getTheaterWithDeleted);
-router.get('/all', getTheatersAll);
+router.post('/', isCinema, createTheater);
+router.put('/:id', isCinema, updateTheater);
+router.delete('/:id', isCinema, deleteTheater);
+router.patch('/:id/restore', isCinema, restoreTheater);
+router.get('/all/:id', isCinema, getTheaterWithDeleted);
+router.get('/all', isCinema, getTheatersAll);
 router.get('/:slug', getTheater);
 router.get('/', getTheaters);
 

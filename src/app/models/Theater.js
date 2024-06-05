@@ -1,8 +1,15 @@
 const { Schema, model } = require('mongoose');
 const slug = require('mongoose-slug-updater');
+const softDelete = require('mongoose-delete');
+const { getAddressDetails } = require('./Address');
 
 const Theater = new Schema(
     {
+        cinema: {
+            type: Schema.Types.ObjectId,
+            ref: 'Cinema',
+            required: true,
+        },
         name: {
             type: String,
             required: true,
@@ -12,27 +19,28 @@ const Theater = new Schema(
             slug: 'name',
             unique: true,
         },
-        description: {
-            type: String,
-            required: true,
-        },
         address: {
-            city: {
-                type: String,
-                required: true,
+            type: {
+                city: {
+                    type: String,
+                    required: true,
+                },
+                district: {
+                    type: String,
+                    required: true,
+                },
+                ward: {
+                    type: String,
+                },
+                street: {
+                    type: String,
+                    required: true,
+                },
+                detail: {
+                    type: String,
+                },
             },
-            district: {
-                type: String,
-                required: true,
-            },
-            ward: {
-                type: String,
-                required: true,
-            },
-            street: {
-                type: String,
-                required: true,
-            },
+            required: true,
         },
         rooms: [
             {
@@ -53,5 +61,22 @@ const Theater = new Schema(
 );
 
 Theater.plugin(slug);
+Theater.plugin(softDelete, { overrideMethods: true, deletedAt: true, deletedBy: true });
+
+Theater.pre('save', async function () {
+    if (this.isModified('address')) {
+        const { city, district, ward } = this.address;
+        this.address.detail = this.address.street + ', ' + (await getAddressDetails(city, district, ward));
+    }
+});
+
+Theater.pre('findOneAndUpdate', async function (next) {
+    const address = this.getUpdate().$set.address;
+    if (!address) {
+        return next();
+    }
+    const { city, district, ward } = address;
+    address.detail = address.street + ', ' + (await getAddressDetails(city, district, ward));
+});
 
 module.exports = model('Theater', Theater);
