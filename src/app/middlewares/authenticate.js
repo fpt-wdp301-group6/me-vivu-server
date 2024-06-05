@@ -18,7 +18,7 @@ const isUser = asyncHandler((req, res, next) => {
 
 const isCinema = asyncHandler((req, res, next) => {
     isUser(req, res, () => {
-        if (req.user.role === UserRole.Cinema || req.user.role === UserRole.Admin) {
+        if (req.user.role === UserRole.Cinema && req.user.cinema) {
             next();
         } else {
             throw new ErrorWithStatus('Bạn không có quyền thực thi', 403);
