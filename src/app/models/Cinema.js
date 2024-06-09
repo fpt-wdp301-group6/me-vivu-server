@@ -20,6 +20,13 @@ const Cinema = new Schema(
         logo: {
             type: String,
         },
+        foods: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Food',
+                required: true,
+            },
+        ],
     },
     { timestamps: true },
 );
