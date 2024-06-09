@@ -7,12 +7,11 @@ const Room = new Schema(
             required: true,
         },
         seats: [
-            [
-                {
-                    type: Schema.Types.ObjectId,
-                    ref: 'seat',
-                },
-            ],
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Seat',
+                required: true,
+            },
         ],
     },
     { timestamps: true },
