@@ -11,7 +11,8 @@ const register = asyncHandler(async (req, res) => {
         throw new ErrorWithStatus('Email đã được đăng ký', 409);
     }
 
-    const newUser = await User.create(req.body);
+    const newUser = new User(req.body);
+    await newUser.save({ session });
 
     await session.commitTransaction();
     session.endSession();
@@ -21,7 +22,7 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
     const session = req.session;
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).session(session);
     if (!user) {
         throw new ErrorWithStatus('Email chưa được đăng ký', 400);
     }
@@ -52,7 +53,7 @@ const refreshToken = asyncHandler(async (req, res, next) => {
     const refreshToken = req.signedCookies.refreshToken;
     if (!refreshToken) throw new ErrorWithStatus('Vui lòng đăng nhập', 400);
 
-    const user = await User.findOne({ refreshToken });
+    const user = await User.findOne({ refreshToken }).session(session);
     if (!user) throw new ErrorWithStatus('Không tồn tài người dùng', 404);
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, async (err, decoded) => {
@@ -82,6 +83,7 @@ const logout = asyncHandler(async (req, res) => {
         {
             refreshToken: '',
         },
+        { session: session },
     );
 
     await session.commitTransaction();
@@ -102,7 +104,7 @@ const loginByRefreshToken = asyncHandler(async (req, res, next) => {
     const refreshToken = req.signedCookies.refreshToken;
     if (!refreshToken) throw new ErrorWithStatus('Vui lòng đăng nhập', 400);
 
-    const user = await User.findOne({ refreshToken });
+    const user = await User.findOne({ refreshToken }).session(session);
     if (!user) throw new ErrorWithStatus('Không tồn tài người dùng!', 404);
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, async (err, decoded) => {

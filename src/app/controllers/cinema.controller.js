@@ -11,7 +11,8 @@ const createCinema = asyncHandler(async (req, res) => {
         throw new ErrorWithStatus('Hệ thống rạp chiếu phim này đã được đăng ký', 409);
     }
 
-    const newCinema = await Cinema.create(req.body);
+    const newCinema = new Cinema(req.body);
+    await newCinema.save({ session });
 
     await session.commitTransaction();
     session.endSession();
@@ -20,7 +21,7 @@ const createCinema = asyncHandler(async (req, res) => {
 
 const updateCinema = asyncHandler(async (req, res) => {
     const session = req.session;
-    const cinema = await Cinema.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    const cinema = await Cinema.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, session });
     if (!cinema) {
         throw new ErrorWithStatus('Hệ thống rạp chiếu phim chưa được đăng ký', 404);
     }
@@ -32,7 +33,7 @@ const updateCinema = asyncHandler(async (req, res) => {
 
 const deleteCinema = asyncHandler(async (req, res) => {
     const session = req.session;
-    const cinema = await Cinema.findById(req.params.id);
+    const cinema = await Cinema.findById(req.params.id).session(session);
     if (!cinema) {
         throw new ErrorWithStatus('Hệ thống rạp chiếu phim chưa được đăng ký', 404);
     }
@@ -45,7 +46,7 @@ const deleteCinema = asyncHandler(async (req, res) => {
 
 const restoreCinema = asyncHandler(async (req, res) => {
     const session = req.session;
-    const cinema = await Cinema.findOneDeleted({ _id: req.params.id });
+    const cinema = await Cinema.findOneDeleted({ _id: req.params.id }).session(session);
     if (!cinema) {
         throw new ErrorWithStatus('Không có hệ thống', 404);
     }
@@ -64,7 +65,6 @@ const getCinema = asyncHandler(async (req, res) => {
         throw new ErrorWithStatus('Không có hệ thống rạp chiếu phim', 404);
     }
 
-    await session.commitTransaction();
     session.endSession();
     res.status(201).json({ data: cinema });
 });
@@ -76,7 +76,6 @@ const getCinemaWithDeleted = asyncHandler(async (req, res) => {
         throw new ErrorWithStatus('Không có hệ thống rạp chiếu phim', 404);
     }
 
-    await session.commitTransaction();
     session.endSession();
     res.status(201).json({ data: cinema });
 });
@@ -86,7 +85,6 @@ const getCinemas = asyncHandler(async (req, res) => {
     const features = new APIFeatures(Cinema, req.query).search('name').filter().sort().limitFields().paginate();
     const [cinemas, total] = await Promise.all([features.query, features.total]);
 
-    await session.commitTransaction();
     session.endSession();
     res.status(201).json({ data: cinemas, total });
 });
@@ -102,7 +100,6 @@ const getCinemasAll = asyncHandler(async (req, res) => {
         .paginate();
     const [cinemas, total] = await Promise.all([features.query, features.total]);
 
-    await session.commitTransaction();
     session.endSession();
     res.status(201).json({ data: cinemas, total });
 });
