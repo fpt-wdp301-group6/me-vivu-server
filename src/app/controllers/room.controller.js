@@ -6,10 +6,8 @@ const { ErrorWithStatus } = require('../../utils/error');
 
 const createRoom = asyncHandler(async (req, res) => {
     const session = req.session;
-    const { name } = req.body;
-    const theater = await Theater.findOne({ _id: req.params.theaterId, cinema: req.user.cinema })
-        .select('rooms')
-        .session(session);
+    const { name, theaterId } = req.body;
+    const theater = await Theater.findOne({ _id: theaterId, cinema: req.user.cinema }).select('rooms').session(session);
 
     if (!theater) {
         throw new ErrorWithStatus('Rạp chiếu không tồn tại', 404);

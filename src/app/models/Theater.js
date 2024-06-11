@@ -20,28 +20,32 @@ const Theater = new Schema(
             unique: true,
         },
         address: {
-            type: {
-                city: {
-                    type: String,
-                    required: true,
-                },
-                district: {
-                    type: String,
-                    required: true,
-                },
-                ward: {
-                    type: String,
-                },
-                street: {
-                    type: String,
-                    required: true,
-                },
-                detail: {
-                    type: String,
-                },
+            city: {
+                type: String,
+                required: true,
             },
-            required: true,
+            district: {
+                type: String,
+                required: true,
+            },
+            ward: {
+                type: String,
+            },
+            street: {
+                type: String,
+                required: true,
+            },
+            detail: {
+                type: String,
+            },
         },
+        showtimes: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Showtime',
+                required: true,
+            },
+        ],
         rooms: [
             {
                 type: Schema.Types.ObjectId,
