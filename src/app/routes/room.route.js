@@ -11,7 +11,7 @@ const { isCinema } = require('../middlewares/authenticate');
 
 const router = Router();
 
-router.post('/:theaterId', isCinema, createRoom);
+router.post('/', isCinema, createRoom);
 router.put('/:id', isCinema, updateRoom);
 router.patch('/:id/seats', isCinema, changeSeatMap);
 router.delete('/:id', isCinema, deleteRoom);
