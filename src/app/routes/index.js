@@ -4,6 +4,7 @@ const addressRouter = require('./address.route');
 const cinemaRouter = require('./cinema.route');
 const foodRouter = require('./food.route');
 const roomRouter = require('./room.route');
+const showtimeRouter = require('./showtime.route');
 const theaterRouter = require('./theater.route');
 
 const routes = (app) => {
@@ -13,6 +14,7 @@ const routes = (app) => {
     app.use('/api/cinemas', cinemaRouter);
     app.use('/api/foods', foodRouter);
     app.use('/api/rooms', roomRouter);
+    app.use('/api/showtimes', showtimeRouter);
     app.use('/api/theaters', theaterRouter);
 };
 

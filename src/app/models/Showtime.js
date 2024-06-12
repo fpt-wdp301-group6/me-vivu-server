@@ -7,11 +7,17 @@ const Showtime = new Schema(
             ref: 'Room',
             required: true,
         },
-        movie: {
-            type: Schema.Types.ObjectId,
-            ref: 'Movie',
+        movieId: {
+            type: Number,
             required: true,
         },
+        reservedSeats: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Seat',
+                required: true,
+            },
+        ],
         startAt: {
             type: Date,
             required: true,
@@ -23,5 +29,7 @@ const Showtime = new Schema(
     },
     { timestamps: true },
 );
+
+Showtime.index({ startAt: 1 });
 
 module.exports = model('Showtime', Showtime);
