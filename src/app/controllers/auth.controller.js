@@ -48,6 +48,48 @@ const login = asyncHandler(async (req, res) => {
         .json({ data: { ...user.toJSON(), token: accessToken }, message: 'Đăng nhập thành công' });
 });
 
+const loginByOthers = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const { user, providerId } = req.body;
+    let googleUser = await User.findOne({ email: user.email }).session(session);
+
+    if (googleUser) {
+        if (providerId !== googleUser.providerId) {
+            throw new ErrorWithStatus('Email đã được đăng ký bằng một phương thức khác', 400);
+        }
+        googleUser.name = user.displayName;
+        googleUser.phone = user.phoneNumber;
+        googleUser.avatar = user.photoURL;
+    } else {
+        googleUser = await User.create({
+            name: user.displayName,
+            email: user.email,
+            phone: user.phoneNumber,
+            avatar: user.photoURL,
+            isVerified: user.emailVerified,
+            providerId,
+        });
+    }
+
+    const accessToken = googleUser.generateAccessToken();
+    const refreshToken = googleUser.generateRefreshToken();
+    googleUser.refreshToken = refreshToken;
+    await googleUser.save();
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200)
+        .cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            signed: true,
+            sameSite: 'none',
+            path: '/api/auth',
+            secure: true, // https
+        })
+        .json({ data: { ...googleUser.toJSON(), token: accessToken }, message: 'Đăng nhập thành công' });
+});
+
 const refreshToken = asyncHandler(async (req, res, next) => {
     const session = req.session;
     const refreshToken = req.signedCookies.refreshToken;
@@ -126,4 +168,4 @@ const loginByRefreshToken = asyncHandler(async (req, res, next) => {
     });
 });
 
-module.exports = { register, login, refreshToken, logout, loginByRefreshToken };
+module.exports = { register, login, refreshToken, logout, loginByRefreshToken, loginByOthers };
