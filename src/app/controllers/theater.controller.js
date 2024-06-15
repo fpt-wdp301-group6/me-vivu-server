@@ -87,7 +87,7 @@ const getTheaterWithDeleted = asyncHandler(async (req, res) => {
 const getTheaters = asyncHandler(async (req, res) => {
     const session = req.session;
     const features = new APIFeatures(Theater, req.query).search('name').filter().sort().limitFields().paginate();
-    const [theaters, total] = await Promise.all([features.query, features.total]);
+    const [theaters, total] = await Promise.all([features.query.populate('cinema'), features.total]);
 
     session.endSession();
     res.status(201).json({ data: theaters, total });
