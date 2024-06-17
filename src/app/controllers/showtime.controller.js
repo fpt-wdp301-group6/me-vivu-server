@@ -13,7 +13,10 @@ const createShowtime = asyncHandler(async (req, res) => {
     if (!movie) {
         throw new ErrorWithStatus('Phim không tìm thấy', 404);
     }
-    req.body.endAt = new Date(startAt) + movie.runtime;
+
+    const endAt = new Date(startAt);
+    endAt.setMinutes(endAt.getMinutes() + movie.runtime);
+    req.body.endAt = endAt;
 
     const showtime = new Showtime(req.body);
     theater.showtimes.push(showtime);
@@ -21,7 +24,7 @@ const createShowtime = asyncHandler(async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
-    res.status(201).json({ data: showtime, message: 'Combo bắp nước được tạo thành công' });
+    res.status(201).json({ data: showtime, message: 'Lịch chiếu được tạo thành công' });
 });
 
 const updateShowtime = asyncHandler(async (req, res) => {
@@ -35,16 +38,18 @@ const deleteShowtime = asyncHandler(async (req, res) => {
 const getShowtimesByTheater = asyncHandler(async (req, res) => {
     const session = req.session;
     const { date } = req.query;
+    const { theaterId } = req.params;
 
     const start = new Date(date || '');
-    const end = new Date(date + 1);
+    const end = new Date(start);
     end.setUTCHours(23, 59, 59, 999);
+    end.setDate(end.getDate() + 1);
 
-    const theater = await Theater.findById(req.params.theaterId)
+    const theater = await Theater.findById(theaterId)
         .populate({
             path: 'showtimes',
             match: {
-                startAt: { $gte: start },
+                startAt: { $gte: start, $lte: end },
             },
             populate: {
                 path: 'room',
@@ -63,6 +68,14 @@ const getShowtimesByTheater = asyncHandler(async (req, res) => {
         acc[movieId].push(showtime);
         return acc;
     }, {});
+
+    Object.keys(groupedShowtimes).forEach((movieId) => {
+        groupedShowtimes[movieId].sort((a, b) => {
+            const timeA = new Date(a.startAt).getTime();
+            const timeB = new Date(b.startAt).getTime();
+            return timeA - timeB;
+        });
+    });
 
     const showtimesByMovie = Object.entries(groupedShowtimes).map(async ([movieId, showtimes]) => {
         const movie = await getMovieDetails(movieId);
