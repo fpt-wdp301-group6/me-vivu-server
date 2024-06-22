@@ -17,7 +17,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(
     cors({
-        origin: process.env.WEBSITE,
+        origin: [process.env.WEBSITE, /^http:\/\/localhost(:\d+)?$/],
         credentials: true,
     }),
 );

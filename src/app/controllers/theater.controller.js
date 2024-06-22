@@ -48,6 +48,18 @@ const deleteTheater = asyncHandler(async (req, res) => {
     res.status(201).json({ data: theater, message: 'Rạp phim được xóa thành công' });
 });
 
+const destroyTheater = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theater = await Theater.findOneAndDelete({ _id: req.params.id, cinema: req.user.cinema }).session(session);
+    if (!theater) {
+        throw new ErrorWithStatus('Rạp phim chưa được đăng ký', 404);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    res.status(201).json({ data: theater, message: 'Rạp phim được xóa thành công' });
+});
+
 const restoreTheater = asyncHandler(async (req, res) => {
     const session = req.session;
     const theater = await Theater.findOneDeleted({ _id: req.params.id, cinema: req.user.cinema }).session(session);
@@ -113,6 +125,7 @@ module.exports = {
     createTheater,
     updateTheater,
     deleteTheater,
+    destroyTheater,
     restoreTheater,
     getTheater,
     getTheaterWithDeleted,
