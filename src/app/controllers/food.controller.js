@@ -3,6 +3,7 @@ const Cinema = require('../models/Cinema');
 const Theater = require('../models/Theater');
 const Food = require('../models/Food');
 const { ErrorWithStatus } = require('../../utils/error');
+const { uploadToCloudinary } = require('../../utils/cloudinaryUploader');
 
 const createFood = asyncHandler(async (req, res) => {
     const session = req.session;
@@ -10,10 +11,13 @@ const createFood = asyncHandler(async (req, res) => {
     const cinema = await Cinema.findById(req.user.cinema).select('foods').populate('foods').session(session);
 
     if (cinema.foods.some((food) => food.name === name)) {
-        throw new ErrorWithStatus('Tên combo đã tồn tại');
+        throw new ErrorWithStatus('Tên combo đã tồn tại', 409);
     }
 
-    const food = new Food(req.body);
+    const imagePath = req.file?.path;
+    const image = await uploadToCloudinary(imagePath);
+
+    const food = new Food({ ...req.body, image: image.secure_url });
     cinema.foods.push(food);
     await Promise.all([cinema.save({ session }), food.save({ session })]);
 
@@ -24,6 +28,11 @@ const createFood = asyncHandler(async (req, res) => {
 
 const updateFood = asyncHandler(async (req, res) => {
     const session = req.session;
+    const imagePath = req.file?.path;
+    if (imagePath) {
+        const image = await uploadToCloudinary(imagePath);
+        req.body.image = image.secure_url;
+    }
     const food = await Food.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, session });
     if (!food) {
         throw new ErrorWithStatus('Combo không tồn tại', 404);

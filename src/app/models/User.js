@@ -79,8 +79,10 @@ User.pre('findOneAndUpdate', async function (next) {
     if (!password && !role && linkedCinema) {
         return next();
     }
-    const salt = bcrypt.genSaltSync(10);
-    this.getUpdate().$set.password = await bcrypt.hash(password, salt);
+    if (password) {
+        const salt = bcrypt.genSaltSync(10);
+        this.getUpdate().$set.password = await bcrypt.hash(password, salt);
+    }
     if (role === UserRole.Cinema && !linkedCinema) {
         throw new ErrorWithStatus('Không có hệ thống rạp liên kết');
     }
