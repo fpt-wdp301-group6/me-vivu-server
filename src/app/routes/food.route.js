@@ -6,7 +6,7 @@ const upload = require('../middlewares/upload');
 const router = Router();
 
 router.post('/', isCinema, upload.single('image'), createFood);
-router.put('/:id', isCinema, updateFood);
+router.put('/:id', isCinema, upload.single('image'), updateFood);
 router.delete('/:id', isCinema, deleteFood);
 router.get('/:theaterId', getFoodsByTheater);
 router.get('/', isCinema, getFoods);
