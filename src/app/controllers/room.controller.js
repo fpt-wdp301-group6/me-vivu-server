@@ -91,6 +91,9 @@ const changeSeatMap = asyncHandler(async (req, res) => {
     const seatOperations = req.body.seats;
     const bulkOperations = [];
     seatOperations.forEach((seat, index) => {
+        if (!seat.name) {
+            throw new ErrorWithStatus('Vui lòng nhập số ghế', 400);
+        }
         const isDuplicatedName = seatOperations.slice(index + 1).some((item) => item.name === seat.name);
         if (isDuplicatedName) {
             throw new ErrorWithStatus('Số ghế trùng nhau', 409);
@@ -103,21 +106,12 @@ const changeSeatMap = asyncHandler(async (req, res) => {
         }
 
         if (seat._id) {
-            if (seat.name === '') {
-                bulkOperations.push({
-                    deleteOne: {
-                        filter: { _id: seat._id },
-                    },
-                });
-                room.seats = room.seats.filter((seatId) => !seatId.equals(seat._id));
-            } else {
-                bulkOperations.push({
-                    updateOne: {
-                        filter: { _id: seat._id },
-                        update: { $set: seat },
-                    },
-                });
-            }
+            bulkOperations.push({
+                updateOne: {
+                    filter: { _id: seat._id },
+                    update: { $set: seat },
+                },
+            });
         } else {
             bulkOperations.push({
                 insertOne: {
@@ -127,9 +121,20 @@ const changeSeatMap = asyncHandler(async (req, res) => {
         }
     });
 
+    room.seats
+        .filter((seatId) => !seatOperations.some((seat) => seatId.equals(seat._id)))
+        .forEach((seat) => {
+            bulkOperations.push({
+                deleteOne: {
+                    filter: { _id: seat._id },
+                },
+            });
+        });
+
     const result = await Seat.bulkWrite(bulkOperations, { session });
 
     const newSeats = result.insertedIds ? Object.values(result.insertedIds) : [];
+    room.seats = room.seats.filter((seatId) => seatOperations.some((seat) => seatId.equals(seat._id)));
     room.seats = room.seats.concat(newSeats);
     await room.save();
 
