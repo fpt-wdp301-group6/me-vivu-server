@@ -98,10 +98,33 @@ const getShowtime = asyncHandler(async (req, res) => {
     res.status(201).json({ data: showtime });
 });
 
+const getSeatsByShowtime = asyncHandler(async (req, res) => {
+    const session = req.session;
+
+    const showtime = await Showtime.findById(req.params.id).populate({
+        path: 'room',
+        populate: {
+            path: 'seats',
+        },
+    });
+
+    const seats = showtime.room.seats;
+
+    seats.map((seat) => {
+        if (showtime.reservedSeats.includes(seat._id)) {
+            seat.status = 'reserved';
+        }
+    });
+
+    session.endSession();
+    res.status(201).json({ data: seats });
+});
+
 module.exports = {
     createShowtime,
     updateShowtime,
     deleteShowtime,
     getShowtimesByTheater,
     getShowtime,
+    getSeatsByShowtime,
 };
