@@ -76,7 +76,7 @@ const getFoods = asyncHandler(async (req, res) => {
 
 const getFoodsByTheater = asyncHandler(async (req, res) => {
     const session = req.session;
-    const theater = await Theater.findById(req.params.theaterId);
+    const theater = await Theater.findById(req.params.theaterId).select('foods').populate('foods');
 
     if (!theater) {
         throw new ErrorWithStatus('Rạp chiếu không tồn tại', 404);
