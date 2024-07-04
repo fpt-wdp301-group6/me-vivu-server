@@ -36,6 +36,10 @@ const Showtime = new Schema(
                 type: Number,
                 default: 0,
             },
+            couple: {
+                type: Number,
+                default: 0,
+            },
         },
     },
     { timestamps: true },

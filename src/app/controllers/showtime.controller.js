@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Theater = require('../models/Theater');
+const Room = require('../models/Theater');
+
 const Showtime = require('../models/Showtime');
 const { ErrorWithStatus } = require('../../utils/error');
 const getMovieDetails = require('../../config/api');
@@ -108,6 +110,32 @@ const getShowtimesByTheater = asyncHandler(async (req, res) => {
     res.status(201).json({ data: result });
 });
 
+const getShowtimesByRoom = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const { date } = req.query;
+    const { roomId } = req.params;
+    const start = new Date(date || '');
+    const end = new Date(start);
+    end.setUTCHours(23, 59, 59, 999);
+    end.setDate(end.getDate() + 1);
+
+    const showtimesOfRoom = await Showtime.find({
+        room: roomId,
+        startAt: { $gte: start, $lt: end }
+    })
+
+    const showtimesWithMovieDetails = await Promise.all(showtimesOfRoom.map(async (showtime) => {
+        const movie = await getMovieDetails(showtime.movieId);
+        return {
+            ...showtime.toObject(),
+            movieId: movie
+        };
+    }))
+
+    session.endSession();
+    res.status(201).json({ data: showtimesWithMovieDetails });
+});
+
 const getShowtime = asyncHandler(async (req, res) => {
     const session = req.session;
     const showtime = await Showtime.findById(req.params.id);
@@ -147,4 +175,5 @@ module.exports = {
     getShowtimesByTheater,
     getShowtime,
     getSeatsByShowtime,
+    getShowtimesByRoom
 };
