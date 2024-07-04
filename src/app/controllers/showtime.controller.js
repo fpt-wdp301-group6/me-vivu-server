@@ -42,6 +42,18 @@ const updateShowtime = asyncHandler(async (req, res) => {
     res.status(201).json({ data: showtime, message: 'Showtime được cập nhật thành công' });
 });
 
+const deleteShowtime = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const showtime = await Showtime.findOne({ _id: req.params.id }).session(session);
+    if (!showtime) {
+        throw new ErrorWithStatus('Showtime chưa được tạo', 404);
+    }
+
+    await Showtime.findByIdAndDelete(req.params.id).session(session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(201).json({ data: showtime, message: 'Showtime được xóa thành công' });
+});
 
 const getShowtimesByTheater = asyncHandler(async (req, res) => {
     const session = req.session;
