@@ -118,11 +118,18 @@ const getShowtimesByRoom = asyncHandler(async (req, res) => {
     const end = new Date(start);
     end.setUTCHours(23, 59, 59, 999);
     end.setDate(end.getDate() + 1);
+    let showtimesOfRoom = [];
+    if (date) {
+        showtimesOfRoom = await Showtime.find({
+            room: roomId,
+            startAt: { $gte: start, $lt: end }
+        })
+    } else {
+        showtimesOfRoom = await Showtime.find({
+            room: roomId
+        })
+    }
 
-    const showtimesOfRoom = await Showtime.find({
-        room: roomId,
-        startAt: { $gte: start, $lt: end }
-    })
 
     const showtimesWithMovieDetails = await Promise.all(showtimesOfRoom.map(async (showtime) => {
         const movie = await getMovieDetails(showtime.movieId);
