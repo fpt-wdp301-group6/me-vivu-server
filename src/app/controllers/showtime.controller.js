@@ -8,18 +8,16 @@ const createShowtime = asyncHandler(async (req, res) => {
     const session = req.session;
     const { theaterId, movieId, startAt } = req.body;
     const theater = await Theater.findOne({ _id: theaterId, cinema: req.user.cinema }).session(session);
-
     const movie = await getMovieDetails(movieId);
     if (!movie) {
         throw new ErrorWithStatus('Phim không tìm thấy', 404);
     }
-
     const endAt = new Date(startAt);
     endAt.setMinutes(endAt.getMinutes() + movie.runtime);
     req.body.endAt = endAt;
 
     const showtime = new Showtime(req.body);
-    theater.showtimes.push(showtime);
+    theater.showtimes?.push(showtime);
     await Promise.all([showtime.save({ session }), theater.save({ session })]);
 
     await session.commitTransaction();
@@ -28,12 +26,22 @@ const createShowtime = asyncHandler(async (req, res) => {
 });
 
 const updateShowtime = asyncHandler(async (req, res) => {
-    // TODO
+    const session = req.session;
+    const showTimeId = req.params.id;
+    const showtime = await Showtime.findOneAndUpdate(
+        { _id: showTimeId },
+        { $set: req.body },
+        { new: true, session },
+    );
+
+    if (!showtime) {
+        throw new ErrorWithStatus('Showtime chưa được tạo', 404);
+    }
+    await session.commitTransaction();
+    session.endSession();
+    res.status(201).json({ data: showtime, message: 'Showtime được cập nhật thành công' });
 });
 
-const deleteShowtime = asyncHandler(async (req, res) => {
-    // TODO
-});
 
 const getShowtimesByTheater = asyncHandler(async (req, res) => {
     const session = req.session;
