@@ -41,19 +41,19 @@ const updateRoom = asyncHandler(async (req, res) => {
 const deleteRoom = asyncHandler(async (req, res) => {
     const session = req.session;
     const roomId = req.params.id;
-    const food = await Room.findById(roomId).session(session);
-    if (!food) {
+    const room = await Room.findById(roomId).session(session);
+    if (!room) {
         throw new ErrorWithStatus('Phóng chiếu không tồn tại', 404);
     }
 
     await Promise.all([
-        food.deleteOne({ session }),
+        room.deleteOne({ session }),
         Theater.updateMany({ rooms: roomId }, { $pull: { rooms: roomId } }, { session }),
     ]);
 
     await session.commitTransaction();
     session.endSession();
-    res.status(201).json({ data: food, message: 'Phóng chiếu được xóa thành công' });
+    res.status(201).json({ data: room, message: 'Phóng chiếu được xóa thành công' });
 });
 
 const getRooms = asyncHandler(async (req, res) => {

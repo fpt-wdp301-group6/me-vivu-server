@@ -26,6 +26,21 @@ const Showtime = new Schema(
             type: Date,
             required: true,
         },
+        price: {
+            normal: {
+                type: Number,
+                default: 0,
+                required: true
+            },
+            vip: {
+                type: Number,
+                default: 0,
+            },
+            couple: {
+                type: Number,
+                default: 0,
+            },
+        },
     },
     { timestamps: true },
 );
