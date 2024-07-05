@@ -36,10 +36,14 @@ const Ticket = new Schema(
             enum: Object.values(TicketStatusEnum),
             default: TicketStatusEnum.Pending,
         },
-        paymentId: {
+        code: {
             type: Number,
             unique: true,
             default: Date.now(),
+        },
+        paymentLinkId: {
+            type: String,
+            unique: true,
         },
         foods: [
             {
