@@ -16,8 +16,7 @@ router.post('/', isCinema, createShowtime);
 router.put('/:id', isCinema, updateShowtime);
 router.delete('/:id', isCinema, deleteShowtime);
 router.get('/:theaterId/list', getShowtimesByTheater);
-router.get('/:roomId/listbyroom', getShowtimesByRoom);
-
+router.get('/:roomId/listbyroom', isCinema, getShowtimesByRoom);
 router.get('/:id', getShowtime);
 router.get('/:id/seats', getSeatsByShowtime);
 

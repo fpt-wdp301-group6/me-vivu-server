@@ -1,6 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const Theater = require('../models/Theater');
-const Room = require('../models/Theater');
 
 const Showtime = require('../models/Showtime');
 const { ErrorWithStatus } = require('../../utils/error');
@@ -19,7 +18,7 @@ const createShowtime = asyncHandler(async (req, res) => {
     req.body.endAt = endAt;
 
     const showtime = new Showtime(req.body);
-    theater.showtimes?.push(showtime);
+    theater.showtimes.push(showtime);
     await Promise.all([showtime.save({ session }), theater.save({ session })]);
 
     await session.commitTransaction();
@@ -30,11 +29,7 @@ const createShowtime = asyncHandler(async (req, res) => {
 const updateShowtime = asyncHandler(async (req, res) => {
     const session = req.session;
     const showTimeId = req.params.id;
-    const showtime = await Showtime.findOneAndUpdate(
-        { _id: showTimeId },
-        { $set: req.body },
-        { new: true, session },
-    );
+    const showtime = await Showtime.findOneAndUpdate({ _id: showTimeId }, { $set: req.body }, { new: true, session });
 
     if (!showtime) {
         throw new ErrorWithStatus('Showtime chưa được tạo', 404);
@@ -118,26 +113,25 @@ const getShowtimesByRoom = asyncHandler(async (req, res) => {
     const end = new Date(start);
     end.setUTCHours(23, 59, 59, 999);
     end.setDate(end.getDate() + 1);
-    let showtimesOfRoom = [];
-    if (date) {
-        showtimesOfRoom = await Showtime.find({
-            room: roomId,
-            startAt: { $gte: start, $lt: end }
-        })
-    } else {
-        showtimesOfRoom = await Showtime.find({
-            room: roomId
-        })
-    }
+    const showtimesOfRoom = await Showtime.find({
+        room: roomId,
+    });
 
+    const movies = [];
+    const showtimesWithMovieDetails = await Promise.all(
+        showtimesOfRoom.map(async (showtime) => {
+            let movie = movies.find((item) => (item.id = showtime.movieId));
+            if (!movie) {
+                movie = await getMovieDetails(showtime.movieId);
+                movies.push(movie);
+            }
 
-    const showtimesWithMovieDetails = await Promise.all(showtimesOfRoom.map(async (showtime) => {
-        const movie = await getMovieDetails(showtime.movieId);
-        return {
-            ...showtime.toObject(),
-            movieId: movie
-        };
-    }))
+            return {
+                ...showtime.toObject(),
+                movie: movie,
+            };
+        }),
+    );
 
     session.endSession();
     res.status(201).json({ data: showtimesWithMovieDetails });
@@ -182,5 +176,5 @@ module.exports = {
     getShowtimesByTheater,
     getShowtime,
     getSeatsByShowtime,
-    getShowtimesByRoom
+    getShowtimesByRoom,
 };
