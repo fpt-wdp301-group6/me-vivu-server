@@ -35,7 +35,7 @@ const createPaymentLink = asyncHandler(async (req, res) => {
     }
 
     const option = {
-        orderCode: ticket.paymentId,
+        orderCode: ticket.code,
         amount: ticket.total,
         description: `${ticket.name}`,
         returnUrl: req.body.returnUrl,
@@ -48,7 +48,7 @@ const createPaymentLink = asyncHandler(async (req, res) => {
     await ticket.save();
 
     session.endSession();
-    res.json(paymentLink.checkoutUrl);
+    res.json({ data: paymentLink.checkoutUrl });
 });
 
 const receiveWebhook = asyncHandler(async (req, res) => {

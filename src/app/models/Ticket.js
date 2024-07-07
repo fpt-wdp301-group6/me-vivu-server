@@ -21,6 +21,10 @@ const Ticket = new Schema(
             type: String,
             required: true,
         },
+        phone: {
+            type: String,
+            required: true,
+        },
         showtime: {
             type: Schema.Types.ObjectId,
             ref: 'Showtime',
@@ -41,9 +45,12 @@ const Ticket = new Schema(
             unique: true,
             default: Date.now(),
         },
+        total: {
+            type: Number,
+            required: true,
+        },
         paymentLinkId: {
             type: String,
-            unique: true,
         },
         foods: [
             {
