@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const { ErrorWithStatus } = require('../../utils/error');
 
 const Showtime = new Schema(
     {
@@ -30,7 +31,7 @@ const Showtime = new Schema(
             normal: {
                 type: Number,
                 default: 0,
-                required: true
+                required: true,
             },
             vip: {
                 type: Number,
@@ -46,5 +47,25 @@ const Showtime = new Schema(
 );
 
 Showtime.index({ startAt: 1 });
+
+Showtime.pre('save', async function (next) {
+    const showtime = this;
+
+    const overlappingShowtime = await model('Showtime').findOne({
+        room: showtime.room,
+        _id: { $ne: showtime._id },
+        $or: [
+            { startAt: { $lt: showtime.endAt, $gt: showtime.startAt } },
+            { endAt: { $lt: showtime.endAt, $gt: showtime.startAt } },
+            { startAt: { $lte: showtime.startAt }, endAt: { $gte: showtime.endAt } },
+        ],
+    });
+
+    if (overlappingShowtime) {
+        throw new ErrorWithStatus('Lịch chiếu bị chồng chéo', 409);
+    }
+
+    next();
+});
 
 module.exports = model('Showtime', Showtime);

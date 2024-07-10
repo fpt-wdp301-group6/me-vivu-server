@@ -19,6 +19,7 @@ const buyTicket = asyncHandler(async (req, res) => {
         throw new ErrorWithStatus('Ghế đã được đặt', 409);
     }
 
+    ticket.user = req.user.id;
     await ticket.save();
 
     session.endSession();

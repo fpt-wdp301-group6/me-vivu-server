@@ -28,28 +28,53 @@ const createShowtime = asyncHandler(async (req, res) => {
 
 const updateShowtime = asyncHandler(async (req, res) => {
     const session = req.session;
-    const showTimeId = req.params.id;
-    const showtime = await Showtime.findOneAndUpdate({ _id: showTimeId }, { $set: req.body }, { new: true, session });
+    const {
+        movieId,
+        startAt,
+        price: { normal, vip, couple },
+    } = req.body;
+
+    const showtime = await Showtime.findById(req.params.id).session(session);
 
     if (!showtime) {
-        throw new ErrorWithStatus('Showtime chưa được tạo', 404);
+        throw new ErrorWithStatus('Lịch chiếu chưa được tạo', 404);
     }
+
+    if (Number(movieId) !== showtime.movieId || showtime.startAt.getTime() !== new Date(startAt).getTime()) {
+        const movie = await getMovieDetails(movieId);
+        if (!movie) {
+            throw new ErrorWithStatus('Phim không tìm thấy', 404);
+        }
+
+        const endAt = new Date(startAt);
+        endAt.setMinutes(endAt.getMinutes() + movie.runtime);
+        showtime.movieId = movieId;
+        showtime.startAt = startAt;
+        showtime.endAt = endAt;
+    }
+
+    //TODO: Optimize later
+    showtime.price.normal = normal;
+    showtime.price.vip = vip;
+    showtime.price.couple = couple;
+
+    await showtime.save({ session });
     await session.commitTransaction();
     session.endSession();
-    res.status(201).json({ data: showtime, message: 'Showtime được cập nhật thành công' });
+    res.status(201).json({ data: showtime, message: 'Lịch chiếu được cập nhật thành công' });
 });
 
 const deleteShowtime = asyncHandler(async (req, res) => {
     const session = req.session;
     const showtime = await Showtime.findOne({ _id: req.params.id }).session(session);
     if (!showtime) {
-        throw new ErrorWithStatus('Showtime chưa được tạo', 404);
+        throw new ErrorWithStatus('Lịch chiếu chưa được tạo', 404);
     }
 
     await Showtime.findByIdAndDelete(req.params.id).session(session);
     await session.commitTransaction();
     session.endSession();
-    res.status(201).json({ data: showtime, message: 'Showtime được xóa thành công' });
+    res.status(201).json({ data: showtime, message: 'Lịch chiếu được xóa thành công' });
 });
 
 const getShowtimesByTheater = asyncHandler(async (req, res) => {
