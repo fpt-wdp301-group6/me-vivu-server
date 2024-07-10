@@ -66,8 +66,8 @@ const receiveWebhook = asyncHandler(async (req, res) => {
         default:
             break;
     }
-    await ticket.save();
-    res.status(200).json(ticket);
+    await ticket?.save();
+    res.status(200).json({ data: ticket, message: 'Đã nhận webhook' });
 });
 
 module.exports = { buyTicket, createPaymentLink, receiveWebhook };
