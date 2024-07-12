@@ -7,6 +7,7 @@ const roomRouter = require('./room.route');
 const showtimeRouter = require('./showtime.route');
 const theaterRouter = require('./theater.route');
 const ticketRouter = require('./ticket.route');
+const testRouter = require('./test.route');
 
 const routes = (app) => {
     app.use(startTransaction);
@@ -18,6 +19,7 @@ const routes = (app) => {
     app.use('/api/showtimes', showtimeRouter);
     app.use('/api/theaters', theaterRouter);
     app.use('/api/tickets', ticketRouter);
+    app.use('/api/test', testRouter);
 };
 
 module.exports = routes;

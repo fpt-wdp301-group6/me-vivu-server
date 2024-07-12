@@ -36,7 +36,7 @@ const Ticket = new Schema(
             required: true,
         },
         status: {
-            type: String,
+            type: Number,
             enum: Object.values(TicketStatusEnum),
             default: TicketStatusEnum.Pending,
         },

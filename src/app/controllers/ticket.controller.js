@@ -3,6 +3,7 @@ const Ticket = require('../models/Ticket');
 const { ErrorWithStatus } = require('../../utils/error');
 const Showtime = require('../models/Showtime');
 const PayOS = require('@payos/node');
+const { sendTicket } = require('../../services/sendTicket');
 
 const buyTicket = asyncHandler(async (req, res) => {
     const session = req.session;
@@ -19,7 +20,7 @@ const buyTicket = asyncHandler(async (req, res) => {
         throw new ErrorWithStatus('Ghế đã được đặt', 409);
     }
 
-    ticket.user = req.user.id;
+    ticket.user = req.user?.id;
     await ticket.save();
 
     session.endSession();
@@ -47,6 +48,7 @@ const createPaymentLink = asyncHandler(async (req, res) => {
     const paymentLink = await payOS.createPaymentLink(option);
     ticket.paymentLinkId = paymentLink.paymentLinkId;
     await ticket.save();
+    await sendTicket(ticket._id);
 
     session.endSession();
     res.json({ data: paymentLink.checkoutUrl });
@@ -67,6 +69,7 @@ const receiveWebhook = asyncHandler(async (req, res) => {
             break;
     }
     await ticket.save();
+    await sendTicket(ticket._id);
     res.status(200).json(ticket);
 });
 

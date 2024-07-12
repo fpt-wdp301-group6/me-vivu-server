@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Email Template</title>
+    </head>
+    <body>
+        <div style="width: 100%">
+            <p style="margin: 13px 0">Cảm ơn quý khách đã sử dụng dịch vụ meVivu. Đây là thông tin vé của bạn</p>
+            <div style="margin: 0 auto; width: 400px; padding: 20px; background-color: antiquewhite">
+                <table style="margin: 0 20px; width: 100%">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Tên phim</strong>
+                            </td>
+                            <td colspan="2">{{movieTitle}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Ngày chiếu</strong>
+                            </td>
+                            <td colspan="2">{{showDate}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Thời gian</strong>
+                            </td>
+                            <td colspan="2">{{startAt}} ~ {{endAt}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Rạp chiếu</strong>
+                            </td>
+                            <td colspan="2">{{theater}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Địa chỉ</strong>
+                            </td>
+                            <td colspan="2">{{theaterAddress}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Phòng chiếu</strong>
+                            </td>
+                            <td colspan="2">{{room}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Ghế</strong>
+                            </td>
+                            <td colspan="2">{{seats}}</td>
+                        </tr>
+                        {{foods}}
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Trạng thái</strong>
+                            </td>
+                            <td colspan="2">{{status}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong style="white-space: nowrap">Tổng cộng</strong>
+                            </td>
+                            <td colspan="2">{{total}}</td>
+                        </tr>
+                        {{payment}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
