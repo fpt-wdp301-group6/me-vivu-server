@@ -55,21 +55,30 @@ const createPaymentLink = asyncHandler(async (req, res) => {
 });
 
 const receiveWebhook = asyncHandler(async (req, res) => {
-    const { status, orderCode } = req.body.data;
+    const { orderCode } = req.body.data;
 
     const ticket = await Ticket.findOne({ code: orderCode });
-    switch (status) {
-        case 'CANCELLED':
-            ticket.status = 3;
-            break;
-        case 'PAID':
-            ticket.status = 2;
-            break;
-        default:
-            break;
+    if (ticket) {
+        const showtime = await Showtime.findById(ticket.showtime);
+        ticket.seats.forEach((seat) => showtime.reservedSeats.push(seat));
+        ticket.status = 2;
+
+        const ticketsToUpdate = await Ticket.find({
+            showtime: ticket.showtime,
+            status: 1,
+            seats: { $in: ticket.seats },
+            _id: { $ne: ticket._id },
+        });
+
+        const updatePromises = ticketsToUpdate.map((t) => {
+            t.status = 3;
+            t.paymentLinkId = null;
+            return t.save();
+        });
+
+        await Promise.all([showtime.save(), await ticket.save(), await sendTicket(ticket._id), ...updatePromises]);
     }
-    await ticket?.save();
-    await sendTicket(ticket._id);
+
     res.status(200).json({ data: ticket, message: 'Đã nhận webhook' });
 });
 
