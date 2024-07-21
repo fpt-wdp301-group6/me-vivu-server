@@ -124,27 +124,22 @@ const getTickets = asyncHandler(async (req, res) => {
 });
 
 const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
-    try {
-        const revenueData = await Ticket.aggregate([
-            {
-                $group: {
-                    _id: { $month: '$createdAt' },
-                    totalRevenue: { $sum: '$total' },
-                },
+    const revenueData = await Ticket.aggregate([
+        {
+            $group: {
+                _id: { $month: '$createdAt' },
+                totalRevenue: { $sum: '$total' },
             },
-            {
-                $sort: { _id: 1 }, // Sort by month (ascending)
-            },
-        ]);
+        },
+        {
+            $sort: { _id: 1 }, // Sort by month (ascending)
+        },
+    ]);
 
-        const months = revenueData.map((month) => month._id);
-        const revenues = revenueData.map((revenue) => revenue.totalRevenue);
-
-        res.json({ months, revenues });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    const months = revenueData.map((month) => month._id);
+    const revenues = revenueData.map((revenue) => revenue.totalRevenue);
+    const monthlyRevenues = { months, revenues };
+    res.status(200).json({ data: monthlyRevenues, message: 'Lấy doanh thu của mỗi tháng thành công!' });
 });
 
 module.exports = { buyTicket, createPaymentLink, receiveWebhook, getTotalRevenuePerMonth, getTickets };
