@@ -87,7 +87,7 @@ const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
         const revenueData = await Ticket.aggregate([
             {
                 $group: {
-                    exactMonth: { $month: '$createdAt' },
+                    _id: { $month: '$createdAt' },
                     totalRevenue: { $sum: '$total' },
                 },
             },
@@ -96,8 +96,8 @@ const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
             },
         ]);
 
-        const months = revenueData.map((month) => month.exactMonth);
-        const revenues = revenueData.map((revenue) => revenue.totalRevenue); // Extract revenues
+        const months = revenueData.map((month) => month._id);
+        const revenues = revenueData.map((revenue) => revenue.totalRevenue);
 
         res.json({ months, revenues });
     } catch (err) {
