@@ -4,6 +4,7 @@ const { ErrorWithStatus } = require('../../utils/error');
 const Showtime = require('../models/Showtime');
 const PayOS = require('@payos/node');
 const { sendTicket } = require('../../services/sendTicket');
+const getMovieDetails = require('../../config/api');
 
 const buyTicket = asyncHandler(async (req, res) => {
     const session = req.session;
@@ -82,6 +83,46 @@ const receiveWebhook = asyncHandler(async (req, res) => {
     res.status(200).json({ data: ticket, message: 'Đã nhận webhook' });
 });
 
+const getTickets = asyncHandler(async (req, res) => {
+    const session = req.session;
+
+    const tickets = await Ticket.find({ user: req.user?.id })
+        .populate([
+            {
+                path: 'theater',
+                select: 'name',
+                populate: {
+                    path: 'cinema',
+                    select: 'logo',
+                },
+            },
+            {
+                path: 'showtime',
+                select: ['movieId', 'startAt', 'endAt'],
+                populate: { path: 'room', select: 'name' },
+            },
+        ])
+        .sort('-createdAt');
+
+    const movieCache = {};
+    const updatedTickets = await Promise.all(
+        tickets.map(async (ticket) => {
+            const ticketMap = ticket._doc;
+            const movieId = ticket.showtime.movieId;
+
+            if (!movieCache[movieId]) {
+                movieCache[movieId] = await getMovieDetails(movieId);
+            }
+
+            ticketMap.showtime._doc.movie = movieCache[movieId];
+            return ticketMap;
+        }),
+    );
+
+    session.endSession();
+    res.json({ data: updatedTickets });
+});
+
 const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
     try {
         const revenueData = await Ticket.aggregate([
@@ -106,4 +147,4 @@ const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { buyTicket, createPaymentLink, receiveWebhook, getTotalRevenuePerMonth };
+module.exports = { buyTicket, createPaymentLink, receiveWebhook, getTotalRevenuePerMonth, getTickets };
