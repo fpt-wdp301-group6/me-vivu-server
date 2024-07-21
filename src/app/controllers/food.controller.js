@@ -86,10 +86,48 @@ const getFoodsByTheater = asyncHandler(async (req, res) => {
     res.status(201).json({ data: theater.foods });
 });
 
+const addFoodToTheater = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theater = await Theater.findById(req.params.theaterId);
+
+    if (!theater) {
+        throw new ErrorWithStatus('Rạp chiếu không tồn tại', 404);
+    }
+
+    if (theater.foods.includes(req.body.food)) {
+        throw new ErrorWithStatus('Bắp nước đã được thêm vào rạp chiếu', 409);
+    }
+
+    theater.foods.push(req.body.food);
+    await theater.save();
+
+    session.endSession();
+    res.status(201).json({ message: 'Đã thêm bắp nước vào rạp chiếu' });
+});
+
+const removeFoodFromTheater = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const foodId = req.params.id;
+
+    const theater = await Theater.findById(req.params.theaterId);
+
+    if (!theater) {
+        throw new ErrorWithStatus('Rạp chiếu không tồn tại', 404);
+    }
+
+    theater.foods = theater.foods.filter((food) => food.equals(foodId));
+    await theater.save();
+
+    session.endSession();
+    res.status(201).json({ message: 'Đã loại bỏ bắp nước ra khỏi rạp chiếu' });
+});
+
 module.exports = {
     createFood,
     updateFood,
     deleteFood,
     getFoods,
     getFoodsByTheater,
+    addFoodToTheater,
+    removeFoodFromTheater,
 };
