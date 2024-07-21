@@ -73,4 +73,28 @@ const receiveWebhook = asyncHandler(async (req, res) => {
     res.status(200).json({ data: ticket, message: 'Đã nhận webhook' });
 });
 
-module.exports = { buyTicket, createPaymentLink, receiveWebhook };
+const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
+    try {
+        const revenueData = await Ticket.aggregate([
+            {
+                $group: {
+                    exactMonth: { $month: '$createdAt' },
+                    totalRevenue: { $sum: '$total' },
+                },
+            },
+            {
+                $sort: { _id: 1 }, // Sort by month (ascending)
+            },
+        ]);
+
+        const months = revenueData.map((month) => month.exactMonth);
+        const revenues = revenueData.map((revenue) => revenue.totalRevenue); // Extract revenues
+
+        res.json({ months, revenues });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+module.exports = { buyTicket, createPaymentLink, receiveWebhook, getTotalRevenuePerMonth };
