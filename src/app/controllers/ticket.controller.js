@@ -90,7 +90,7 @@ const getTickets = asyncHandler(async (req, res) => {
         .populate([
             {
                 path: 'theater',
-                select: 'name',
+                select: ['name', 'address'],
                 populate: {
                     path: 'cinema',
                     select: 'logo',
@@ -100,6 +100,12 @@ const getTickets = asyncHandler(async (req, res) => {
                 path: 'showtime',
                 select: ['movieId', 'startAt', 'endAt'],
                 populate: { path: 'room', select: 'name' },
+            },
+            {
+                path: 'foods.item',
+            },
+            {
+                path: 'seats',
             },
         ])
         .sort('-createdAt');
