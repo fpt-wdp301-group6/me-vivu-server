@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Ticket = require('../models/Ticket');
+const Theater = require('../models/Theater');
 const { ErrorWithStatus } = require('../../utils/error');
 const Showtime = require('../models/Showtime');
 const PayOS = require('@payos/node');
@@ -148,4 +149,35 @@ const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
     res.status(200).json({ data: monthlyRevenues, message: 'Lấy doanh thu của mỗi tháng thành công!' });
 });
 
-module.exports = { buyTicket, createPaymentLink, receiveWebhook, getTotalRevenuePerMonth, getTickets };
+const getCinemaTicketsCount = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theaters = await Theater.find({ cinema: req.user.cinema }).select('_id');
+    const theaterIds = theaters.map((theater) => theater._id);
+
+    const ticketCount = await Ticket.countDocuments({ theater: { $in: theaterIds }, status: 2 });
+
+    session.endSession();
+    res.status(200).json({ data: ticketCount });
+});
+
+const getTotalTickets = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theaters = await Theater.find({ cinema: req.user.cinema }).select('_id');
+    const theaterIds = theaters.map((theater) => theater._id);
+
+    const ticket = await Ticket.find({ theater: { $in: theaterIds }, status: 2 });
+    const total = ticket.reduce((sum, t) => (sum += t.total), 0);
+
+    session.endSession();
+    res.status(200).json({ data: total });
+});
+
+module.exports = {
+    buyTicket,
+    createPaymentLink,
+    receiveWebhook,
+    getTotalRevenuePerMonth,
+    getTickets,
+    getCinemaTicketsCount,
+    getTotalTickets,
+};

@@ -194,6 +194,17 @@ const getSeatsByShowtime = asyncHandler(async (req, res) => {
     res.status(201).json({ data: seats });
 });
 
+const countByCinema = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theater = await Theater.find({ cinema: req.user.cinema });
+    const roomIds = [].concat(...theater.map((t) => t.rooms));
+
+    const showtimeCount = await Showtime.countDocuments({ room: { $in: roomIds } });
+
+    session.endSession();
+    res.status(200).json({ data: showtimeCount });
+});
+
 module.exports = {
     createShowtime,
     updateShowtime,
@@ -202,4 +213,5 @@ module.exports = {
     getShowtime,
     getSeatsByShowtime,
     getShowtimesByRoom,
+    countByCinema,
 };
