@@ -105,7 +105,7 @@ User.methods.toJSON = function () {
 
 User.methods.generateAccessToken = function () {
     return jwt.sign({ id: this._id, role: this.role, cinema: this.linkedCinema }, process.env.ACCESS_TOKEN, {
-        expiresIn: '10m',
+        expiresIn: '10d',
     });
 };
 

@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Ticket = require('../models/Ticket');
+const Theater = require('../models/Theater');
 const { ErrorWithStatus } = require('../../utils/error');
 const Showtime = require('../models/Showtime');
 const PayOS = require('@payos/node');
@@ -90,7 +91,7 @@ const getTickets = asyncHandler(async (req, res) => {
         .populate([
             {
                 path: 'theater',
-                select: 'name',
+                select: ['name', 'address'],
                 populate: {
                     path: 'cinema',
                     select: 'logo',
@@ -100,6 +101,12 @@ const getTickets = asyncHandler(async (req, res) => {
                 path: 'showtime',
                 select: ['movieId', 'startAt', 'endAt'],
                 populate: { path: 'room', select: 'name' },
+            },
+            {
+                path: 'foods.item',
+            },
+            {
+                path: 'seats',
             },
         ])
         .sort('-createdAt');
@@ -123,8 +130,16 @@ const getTickets = asyncHandler(async (req, res) => {
     res.json({ data: updatedTickets });
 });
 
-const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
+const getTotalRevenuePerMonthByCinema = asyncHandler(async (req, res) => {
+    const theaters = await Theater.find({ cinema: req.user.cinema }).select('_id');
+    const theaterIds = theaters.map((theater) => theater._id);
     const revenueData = await Ticket.aggregate([
+        {
+            $match: {
+                theater: { $in: theaterIds },
+                status: 2,
+            },
+        },
         {
             $group: {
                 _id: { $month: '$createdAt' },
@@ -142,4 +157,81 @@ const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
     res.status(200).json({ data: monthlyRevenues, message: 'Lấy doanh thu của mỗi tháng thành công!' });
 });
 
-module.exports = { buyTicket, createPaymentLink, receiveWebhook, getTotalRevenuePerMonth, getTickets };
+const getCinemaTicketsCount = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theaters = await Theater.find({ cinema: req.user.cinema }).select('_id');
+    const theaterIds = theaters.map((theater) => theater._id);
+
+    const ticketCount = await Ticket.countDocuments({ theater: { $in: theaterIds }, status: 2 });
+
+    session.endSession();
+    res.status(200).json({ data: ticketCount });
+});
+
+const getTotalTickets = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const theaters = await Theater.find({ cinema: req.user.cinema }).select('_id');
+    const theaterIds = theaters.map((theater) => theater._id);
+
+    const ticket = await Ticket.find({ theater: { $in: theaterIds }, status: 2 });
+    const total = ticket.reduce((sum, t) => (sum += t.total), 0);
+
+    session.endSession();
+    res.status(200).json({ data: total });
+});
+
+const getTicketsCount = asyncHandler(async (req, res) => {
+    const session = req.session;
+
+    const ticketCount = await Ticket.countDocuments({ status: 2 });
+
+    session.endSession();
+    res.status(200).json({ data: ticketCount });
+});
+
+const getTotalRevenuePerMonth = asyncHandler(async (req, res) => {
+    const revenueData = await Ticket.aggregate([
+        {
+            $match: {
+                status: 2,
+            },
+        },
+        {
+            $group: {
+                _id: { $month: '$createdAt' },
+                totalRevenue: { $sum: '$total' },
+            },
+        },
+        {
+            $sort: { _id: 1 }, // Sort by month (ascending)
+        },
+    ]);
+
+    const months = revenueData.map((month) => month._id);
+    const revenues = revenueData.map((revenue) => revenue.totalRevenue);
+    const monthlyRevenues = { months, revenues };
+    res.status(200).json({ data: monthlyRevenues, message: 'Lấy doanh thu của mỗi tháng thành công!' });
+});
+
+const getAllTotalTickets = asyncHandler(async (req, res) => {
+    const session = req.session;
+
+    const ticket = await Ticket.find({ status: 2 });
+    const total = ticket.reduce((sum, t) => (sum += t.total), 0);
+
+    session.endSession();
+    res.status(200).json({ data: total });
+});
+
+module.exports = {
+    buyTicket,
+    createPaymentLink,
+    receiveWebhook,
+    getTotalRevenuePerMonthByCinema,
+    getTickets,
+    getCinemaTicketsCount,
+    getTotalTickets,
+    getTotalRevenuePerMonth,
+    getTicketsCount,
+    getAllTotalTickets,
+};

@@ -170,4 +170,21 @@ const loginByRefreshToken = asyncHandler(async (req, res, next) => {
     });
 });
 
-module.exports = { register, login, refreshToken, logout, loginByRefreshToken, loginByOthers };
+const changePassword = asyncHandler(async (req, res) => {
+    const session = req.session;
+    const user = await User.findById(req.user.id).session(session);
+    if (!user) throw new ErrorWithStatus('Không tồn tài người dùng', 404);
+
+    if (!(await user.isPasswordMatched(req.body.password))) {
+        throw new ErrorWithStatus('Mật khẩu cũ không đúng', 400);
+    }
+
+    user.password = req.body.newPassword;
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+    res.json({ message: 'Thay đổi mật khẩu thành công' });
+});
+
+module.exports = { register, login, refreshToken, logout, loginByRefreshToken, loginByOthers, changePassword };

@@ -3,6 +3,16 @@ const asyncHandler = require('express-async-handler');
 const { ErrorWithStatus } = require('../../utils/error');
 const { UserRole } = require('../../utils/constants');
 
+const hasToken = asyncHandler((req, res, next) => {
+    const token = req.header('Authorization')?.startsWith('Bearer') && req.header('Authorization').split(' ')[1];
+    if (token) {
+        jwt.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
+            if (!err) req.user = user;
+        });
+    }
+    next();
+});
+
 const isUser = asyncHandler((req, res, next) => {
     const token = req.header('Authorization')?.startsWith('Bearer') && req.header('Authorization').split(' ')[1];
     if (!token) {
@@ -36,4 +46,4 @@ const isAdmin = asyncHandler((req, res, next) => {
     });
 });
 
-module.exports = { isUser, isCinema, isAdmin };
+module.exports = { isUser, isCinema, isAdmin, hasToken };
