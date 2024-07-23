@@ -205,6 +205,15 @@ const countByCinema = asyncHandler(async (req, res) => {
     res.status(200).json({ data: showtimeCount });
 });
 
+const countAll = asyncHandler(async (req, res) => {
+    const session = req.session;
+
+    const showtimeCount = await Showtime.countDocuments();
+
+    session.endSession();
+    res.status(200).json({ data: showtimeCount });
+});
+
 module.exports = {
     createShowtime,
     updateShowtime,
@@ -214,4 +223,5 @@ module.exports = {
     getSeatsByShowtime,
     getShowtimesByRoom,
     countByCinema,
+    countAll,
 };

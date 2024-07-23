@@ -8,6 +8,7 @@ const {
     getSeatsByShowtime,
     getShowtimesByRoom,
     countByCinema,
+    countAll,
 } = require('../controllers/showtime.controller');
 const { isCinema } = require('../middlewares/authenticate');
 
@@ -21,5 +22,6 @@ router.get('/:roomId/listbyroom', isCinema, getShowtimesByRoom);
 router.get('/:id', getShowtime);
 router.get('/:id/seats', getSeatsByShowtime);
 router.get('/cinema/count', isCinema, countByCinema);
+router.get('/all/count', countAll);
 
 module.exports = router;
